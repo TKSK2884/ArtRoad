@@ -1,0 +1,46 @@
+:root {
+    /* 색상 토큰 */
+    --bg: #ffffff;
+    --fg: #1f2937;
+
+    --header-bg: #ffffff;
+    --header-border: #e5e7eb;
+    --shadow-1: 0 1px 2px #0000000d;
+
+    /* 타이틀 */
+    --title-color: #1f2937;
+    --subtitle-color: #4b5563;
+
+    /* 크기/레이아웃 토큰 */
+    --container-w: 1280px;
+    --space-1: 12px;
+    --space-2: 16px;
+    --space-3: 24px;
+
+    /* 폰트 */
+    --logo-size: 20px;
+    --logo-weight: 700;
+
+    /* 맵 */
+    --map-bg: #f1f5f9;
+    --infowindow-text: #000000;
+    --control-bg: #f5f5f5;
+    --control-border: #bfbfbf;
+}
+
+:root[data-theme="dark"] {
+    --bg: #0f172a;
+    --fg: #f1f5f9;
+
+    --header-bg: #0f172a;
+    --header-border: #334155;
+    --shadow-1: 0 1px 2px #0000000d;
+
+    --title-color: #f1f5f9;
+    --subtitle-color: #9ca3af;
+
+    --map-bg: #1e293b; /* 다크 모드 전용 지도 배경색 */
+    --infowindow-text: #1f2937;
+    --control-bg: #334155;
+    --control-border: #475569;
+}
