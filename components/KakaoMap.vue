@@ -1,0 +1,201 @@
+<template>
+    <div :class="$style.mapwrap">
+        <div :class="$style.map" ref="mapEl" />
+        <div :class="$style.control">
+            <span @click="zoomIn()"
+                ><img
+                    src="https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/ico_plus.png"
+                    alt="확대"
+            /></span>
+            <span @click="zoomOut()"
+                ><img
+                    src="https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/ico_minus.png"
+                    alt="축소"
+            /></span>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { loadKakaoMap } from "@/utils/loadKakaoMap";
+import type { Exhibition } from "~/structure/type";
+
+const mapEl: Ref<HTMLDivElement | null> = ref(null);
+const exhibitions: Ref<Exhibition[]> = ref([]);
+const iqExhibitions = ref([]);
+
+let map: any = null;
+let activeInfoWindow: { close: () => void } | null = null;
+
+onMounted(async () => {
+    if (process.server) return;
+
+    const res = await fetch("/exhibitions.json");
+    exhibitions.value = await res.json();
+
+    const res2 = await fetch("iq-exhibitions.json");
+    iqExhibitions.value = await res2.json();
+
+    console.log(iqExhibitions.value);
+
+    // console.log(exhibitions.value);
+
+    await loadKakaoMap();
+
+    map = new kakao.maps.Map(mapEl.value, {
+        center: new kakao.maps.LatLng(37.5665, 126.978),
+        level: 5,
+    });
+
+    // 위치 정보 받아오기
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            map.setCenter(new kakao.maps.LatLng(lat, lng));
+        },
+        (error) => {
+            console.error("위치 정보 가져오기 실패");
+        }
+    );
+
+    exhibitions.value.forEach((item: Exhibition) => {
+        if (item.strtdate && item.endDate) {
+            const now = convertKoreaTime(new Date(), "day");
+
+            const start = new Date(item.strtdate);
+            const end = new Date(item.endDate);
+
+            start.setHours(0, 0, 0, 0);
+            end.setHours(23, 59, 59, 999);
+
+            const isOngoing = now >= start && now <= end;
+
+            if (!isOngoing) {
+                return;
+            }
+        }
+
+        const marker = new kakao.maps.Marker({
+            map,
+            position: new kakao.maps.LatLng(Number(item.lat), Number(item.lng)),
+        });
+
+        const infowindow = new kakao.maps.InfoWindow({
+            content: `
+            <div class="infowindow">
+                <button onclick="window.closeInfowindow()"
+                    style="
+                    position: absolute;
+                    top: 6px;
+                    right: 6px;
+                    background: #eee;
+                    border: none;
+                    border-radius: 4px;
+                    font-size: 14px;
+                    padding: 2px 6px;
+                    cursor: pointer;
+                    "
+                >X</button>
+            <div class="title" style="margin-top:22px">
+                ${item.title}
+            </div>
+            <img src="${item.imageUrl}" style="width:100%; border-radius:6px; margin-bottom:8px;" />
+            <div style="margin-bottom:4px;">
+                <span>🗓 ${item.strtdate} ~ ${item.endDate}</span>
+            </div>
+            <div style="color:#666;">📍 ${item.place}</div>
+            </div>
+            `,
+        });
+
+        window.closeInfowindow = () => {
+            if (activeInfoWindow) {
+                activeInfoWindow.close();
+                activeInfoWindow = null;
+            }
+        };
+
+        kakao.maps.event.addListener(marker, "click", () => {
+            if (activeInfoWindow) {
+                activeInfoWindow.close();
+            }
+
+            infowindow.open(map, marker);
+
+            activeInfoWindow = infowindow;
+        });
+    });
+});
+
+const zoomIn = () => {
+    if (!map) return;
+
+    map.setLevel(map.getLevel() - 1);
+};
+
+const zoomOut = () => {
+    if (!map) return;
+
+    map.setLevel(map.getLevel() + 1);
+};
+</script>
+
+<style lang="scss" module>
+.mapwrap {
+    position: relative;
+
+    > .map {
+        width: 100%;
+        height: 500px;
+        background: var(--map-bg);
+        border-radius: 12px;
+
+        :global(.infowindow) {
+            width: 240px;
+            font-size: 14px;
+            padding: 6px;
+            border-radius: 8px;
+            color: var(--infowindow-text);
+
+            :global(.title) {
+                font-weight: bold;
+                font-size: 16px;
+                margin-bottom: 6px;
+            }
+        }
+    }
+
+    > .control {
+        width: 36px;
+        height: 80px;
+        background-color: var(--control-bg);
+        position: absolute;
+        top: 50px;
+        right: 10px;
+        z-index: 1;
+        overflow: hidden;
+        border-radius: 8px;
+
+        > span {
+            width: 36px;
+            height: 40px;
+            text-align: center;
+            display: block;
+            cursor: pointer;
+
+            > img {
+                width: 15px;
+                height: 15px;
+                margin-block: 12px;
+                border: none;
+            }
+        }
+
+        > span:first-child {
+            border-bottom: 1px solid var(--control-border);
+        }
+    }
+}
+</style>
