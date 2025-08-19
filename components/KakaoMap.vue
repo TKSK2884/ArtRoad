@@ -21,29 +21,23 @@ import { loadKakaoMap } from "@/utils/loadKakaoMap";
 import type { Exhibition } from "~/structure/type";
 
 const mapEl: Ref<HTMLDivElement | null> = ref(null);
-const exhibitions: Ref<Exhibition[]> = ref([]);
-const iqExhibitions = ref([]);
+const {
+    data: exhibitions,
+    pending,
+    error,
+} = useFetch<Exhibition[]>("/exhibitions.json", {
+    baseURL: useRequestURL().origin,
+    default: () => [],
+});
 
 let map: any = null;
 let activeInfoWindow: { close: () => void } | null = null;
 
 onMounted(async () => {
-    if (process.server) return;
-
-    const res = await fetch("/exhibitions.json");
-    exhibitions.value = await res.json();
-
-    const res2 = await fetch("iq-exhibitions.json");
-    iqExhibitions.value = await res2.json();
-
-    console.log(iqExhibitions.value);
-
-    // console.log(exhibitions.value);
-
     await loadKakaoMap();
 
-    map = new kakao.maps.Map(mapEl.value, {
-        center: new kakao.maps.LatLng(37.5665, 126.978),
+    map = new window.kakao.maps.Map(mapEl.value, {
+        center: new window.kakao.maps.LatLng(37.5665, 126.978),
         level: 5,
     });
 
@@ -53,7 +47,7 @@ onMounted(async () => {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
 
-            map.setCenter(new kakao.maps.LatLng(lat, lng));
+            map.setCenter(new window.kakao.maps.LatLng(lat, lng));
         },
         (error) => {
             console.error("위치 정보 가져오기 실패");
@@ -77,12 +71,15 @@ onMounted(async () => {
             }
         }
 
-        const marker = new kakao.maps.Marker({
+        const marker = new window.kakao.maps.Marker({
             map,
-            position: new kakao.maps.LatLng(Number(item.lat), Number(item.lng)),
+            position: new window.kakao.maps.LatLng(
+                Number(item.lat),
+                Number(item.lng)
+            ),
         });
 
-        const infowindow = new kakao.maps.InfoWindow({
+        const infowindow = new window.kakao.maps.InfoWindow({
             content: `
             <div class="infowindow">
                 <button onclick="window.closeInfowindow()"
@@ -117,7 +114,7 @@ onMounted(async () => {
             }
         };
 
-        kakao.maps.event.addListener(marker, "click", () => {
+        window.kakao.maps.event.addListener(marker, "click", () => {
             if (activeInfoWindow) {
                 activeInfoWindow.close();
             }

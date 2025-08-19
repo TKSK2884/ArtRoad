@@ -9,7 +9,17 @@
     </div>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+useHead({
+    title: "아트로드 - 전시 탐색",
+    meta: [
+        {
+            name: "description",
+            content: "전시회 정보를 지도로 탐색하세요.",
+        },
+    ],
+});
+</script>
 
 <style lang="scss" module>
 .index {
