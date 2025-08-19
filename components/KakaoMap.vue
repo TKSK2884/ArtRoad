@@ -33,10 +33,10 @@ onMounted(async () => {
     const res = await fetch("/exhibitions.json");
     exhibitions.value = await res.json();
 
-    const res2 = await fetch("iq-exhibitions.json");
-    iqExhibitions.value = await res2.json();
+    // const res2 = await fetch("iq-exhibitions.json");
+    // iqExhibitions.value = await res2.json();
 
-    console.log(iqExhibitions.value);
+    // console.log(iqExhibitions.value);
 
     // console.log(exhibitions.value);
 
