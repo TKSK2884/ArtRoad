@@ -55,10 +55,16 @@ const themeStore = useThemeStore();
                 font-weight: var(--logo-weight);
                 color: var(--fg);
                 text-decoration: none;
+
+                user-select: none; /* 텍스트 하이라이트/드래그 금지 */
+                -webkit-user-select: none; /* Safari */
             }
 
             > .nav > .themebutton {
                 cursor: pointer;
+
+                user-select: none;
+                -webkit-user-select: none;
             }
         }
     }
