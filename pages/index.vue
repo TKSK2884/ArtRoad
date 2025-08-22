@@ -5,7 +5,22 @@
             지도를 통해 가까운 전시회 정보를 확인할 수 있어요.
         </div>
 
-        <KakaoMap :class="$style.map" />
+        <KakaoMap :class="$style.map" :center="myCenter" />
+        <v-btn @click="centerToMe" variant="elevated"> 📍 내 위치 </v-btn>
+
+        <!-- Snackbar -->
+        <v-snackbar v-model="showSnackbar" color="warning" timeout="4000">
+            위치 정보를 가져올 수 없어 서울시청 좌표로 이동했습니다.
+            <template #actions>
+                <v-btn
+                    color="white"
+                    variant="text"
+                    @click="showSnackbar = false"
+                >
+                    닫기
+                </v-btn>
+            </template>
+        </v-snackbar>
     </div>
 </template>
 
@@ -19,6 +34,7 @@ useHead({
         },
     ],
 });
+    navigator.geolocation.getCurrentPosition(
 </script>
 
 <style lang="scss" module>
