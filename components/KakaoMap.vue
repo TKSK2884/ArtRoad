@@ -20,6 +20,10 @@
 import { loadKakaoMap } from "@/utils/loadKakaoMap";
 import type { Exhibition } from "~/structure/type";
 
+const props = defineProps<{
+    center?: { lat: number; lng: number } | null;
+}>();
+
 const mapEl: Ref<HTMLDivElement | null> = ref(null);
 const {
     data: exhibitions,
@@ -40,19 +44,6 @@ onMounted(async () => {
         center: new window.kakao.maps.LatLng(37.5665, 126.978),
         level: 5,
     });
-
-    // 위치 정보 받아오기
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-
-            map.setCenter(new window.kakao.maps.LatLng(lat, lng));
-        },
-        (error) => {
-            console.error("위치 정보 가져오기 실패");
-        }
-    );
 
     exhibitions.value.forEach((item: Exhibition) => {
         if (item.strtdate && item.endDate) {
@@ -137,6 +128,15 @@ const zoomOut = () => {
 
     map.setLevel(map.getLevel() + 1);
 };
+
+watch(
+    () => props.center,
+    (n) => {
+        if (n == null) return;
+
+        map.setCenter(new window.kakao.maps.LatLng(n.lat, n.lng));
+    }
+);
 </script>
 
 <style lang="scss" module>
