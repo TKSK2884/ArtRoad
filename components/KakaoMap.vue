@@ -20,19 +20,23 @@
 import { loadKakaoMap } from "@/utils/loadKakaoMap";
 import type { Exhibition } from "~/structure/type";
 
+const config = useRuntimeConfig();
+
 const props = defineProps<{
     center?: { lat: number; lng: number } | null;
 }>();
 
 const mapEl: Ref<HTMLDivElement | null> = ref(null);
 const {
-    data: exhibitions,
+    data: res,
     pending,
     error,
-} = useFetch<Exhibition[]>("/exhibitions.json", {
-    baseURL: useRequestURL().origin,
-    default: () => [],
+} = useFetch<{ success: boolean; data: Exhibition[] }>("/api/exhibitions", {
+    baseURL: config.public.apiBase,
+    default: () => ({ success: false, data: [] }),
 });
+
+const exhibitions: Ref<Exhibition[]> = computed(() => res.value?.data ?? []);
 
 let map: any = null;
 let activeInfoWindow: { close: () => void } | null = null;
@@ -65,8 +69,8 @@ onMounted(async () => {
         const marker = new window.kakao.maps.Marker({
             map,
             position: new window.kakao.maps.LatLng(
-                Number(item.lat),
-                Number(item.lng)
+                Number(item.latitude),
+                Number(item.longitude)
             ),
         });
 
@@ -89,9 +93,9 @@ onMounted(async () => {
             <div class="title" style="margin-top:22px">
                 ${item.title}
             </div>
-            <img src="${item.imageUrl}" style="width:100%; border-radius:6px; margin-bottom:8px;" />
+            <img src="${item.image_url}" style="width:100%; border-radius:6px; margin-bottom:8px;" />
             <div style="margin-bottom:4px;">
-                <span>🗓 ${item.strtdate} ~ ${item.endDate}</span>
+                <span>🗓 ${item.start_date} ~ ${item.end_date}</span>
             </div>
             <div style="color:#666;">📍 ${item.place}</div>
             </div>
