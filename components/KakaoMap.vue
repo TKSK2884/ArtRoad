@@ -18,6 +18,7 @@
 
 <script setup lang="ts">
 import { loadKakaoMap } from "@/utils/loadKakaoMap";
+import { format } from "date-fns";
 import type { Exhibition } from "~/structure/type";
 
 const config = useRuntimeConfig();
@@ -50,11 +51,11 @@ onMounted(async () => {
     });
 
     exhibitions.value.forEach((item: Exhibition) => {
-        if (item.strtdate && item.endDate) {
+        if (item.start_date && item.end_date) {
             const now = convertKoreaTime(new Date(), "day");
 
-            const start = new Date(item.strtdate);
-            const end = new Date(item.endDate);
+            const start = new Date(item.start_date);
+            const end = new Date(item.end_date);
 
             start.setHours(0, 0, 0, 0);
             end.setHours(23, 59, 59, 999);
@@ -81,7 +82,7 @@ onMounted(async () => {
                     style="
                     position: absolute;
                     top: 6px;
-                    right: 6px;
+                    right: 8px;
                     background: #eee;
                     border: none;
                     border-radius: 4px;
@@ -90,12 +91,19 @@ onMounted(async () => {
                     cursor: pointer;
                     "
                 >X</button>
-            <div class="title" style="margin-top:22px">
+            <div class="title" style="margin-right:24px;">
                 ${item.title}
             </div>
-            <img src="${item.image_url}" style="width:100%; border-radius:6px; margin-bottom:8px;" />
+            <img src="${
+                item.image_url
+            }" style="width:100%; border-radius:6px; margin-bottom:8px;" />
             <div style="margin-bottom:4px;">
-                <span>🗓 ${item.start_date} ~ ${item.end_date}</span>
+                <span>
+                    🗓 ${format(
+                        new Date(item.start_date),
+                        "yyyy-MM-dd"
+                    )} ~ ${format(new Date(item.end_date), "yyyy-MM-dd")}
+                </span>
             </div>
             <div style="color:#666;">📍 ${item.place}</div>
             </div>
