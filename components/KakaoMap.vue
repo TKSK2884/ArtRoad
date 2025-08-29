@@ -45,22 +45,6 @@ onMounted(async () => {
     });
 
     props.exhibitions.forEach((item: Exhibition) => {
-        if (item.start_date && item.end_date) {
-            const now = convertKoreaTime(new Date(), "day");
-
-            const start = new Date(item.start_date);
-            const end = new Date(item.end_date);
-
-            start.setHours(0, 0, 0, 0);
-            end.setHours(23, 59, 59, 999);
-
-            const isOngoing = now >= start && now <= end;
-
-            if (!isOngoing) {
-                return;
-            }
-        }
-
         const marker = new window.kakao.maps.Marker({
             map,
             position: new window.kakao.maps.LatLng(
