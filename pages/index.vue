@@ -5,8 +5,25 @@
             지도를 통해 가까운 전시회 정보를 확인할 수 있어요.
         </div>
 
-        <KakaoMap :class="$style.map" :center="myCenter" />
-        <v-btn @click="centerToMe" variant="elevated"> 📍 내 위치 </v-btn>
+        <div :class="$style.layout">
+            <KakaoMap
+                :class="$style.map"
+                :exhibitions="exhibitions"
+                :selected="selectedExhibition"
+                :center="myCenter"
+                @select="selectedExhibition = $event"
+            />
+
+            <ExhibitionList
+                :class="$style.list"
+                :exhibitions="exhibitions"
+                @click-item="selectedExhibition = $event"
+            />
+        </div>
+
+        <v-btn :class="$style.location" @click="centerToMe" icon elevation="6">
+            <v-icon>mdi-crosshairs-gps</v-icon>
+        </v-btn>
 
         <!-- Snackbar -->
         <v-snackbar v-model="showSnackbar" color="warning" timeout="4000">
@@ -25,6 +42,8 @@
 </template>
 
 <script lang="ts" setup>
+import type { Exhibition } from "~/structure/type";
+
 useHead({
     title: "아트로드 - 전시 탐색",
     meta: [
@@ -35,8 +54,22 @@ useHead({
     ],
 });
 
+const config = useRuntimeConfig();
+
 const myCenter: Ref<{ lat: number; lng: number } | null> = ref(null);
 const showSnackbar: Ref<boolean> = ref(false);
+
+const {
+    data: res,
+    pending,
+    error,
+} = useFetch<{ success: boolean; data: Exhibition[] }>("/api/exhibitions", {
+    baseURL: config.public.apiBase,
+    default: () => ({ success: false, data: [] }),
+});
+
+const exhibitions: Ref<Exhibition[]> = computed(() => res.value?.data ?? []);
+const selectedExhibition = ref<Exhibition | null>(null);
 
 const centerToMe = () => {
     // 위치 정보 받아오기
@@ -59,6 +92,8 @@ const centerToMe = () => {
 </script>
 
 <style lang="scss" module>
+@use "@/assets/scss/mixins.scss" as *;
+
 .index {
     padding: 16px;
 
@@ -77,8 +112,42 @@ const centerToMe = () => {
         margin-bottom: 12px;
     }
 
-    > .map {
-        margin-bottom: 12px;
+    > .layout {
+        display: flex;
+        gap: 16px;
+
+        margin-bottom: 16px;
+
+        @include mobile {
+            flex-direction: column;
+        }
+
+        > .map {
+            flex: 2;
+        }
+
+        > .list {
+            flex: 1;
+            max-height: 500px;
+            overflow-x: auto;
+        }
+
+        > .map,
+        > .list {
+            @include mobile {
+                width: 100%;
+            }
+        }
+    }
+
+    > .location {
+        position: static;
+
+        @include mobile {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+        }
     }
 }
 </style>

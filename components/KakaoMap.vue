@@ -21,23 +21,17 @@ import { loadKakaoMap } from "@/utils/loadKakaoMap";
 import { format } from "date-fns";
 import type { Exhibition } from "~/structure/type";
 
-const config = useRuntimeConfig();
-
 const props = defineProps<{
+    exhibitions: Exhibition[];
+    selected?: Exhibition | null;
     center?: { lat: number; lng: number } | null;
 }>();
 
-const mapEl: Ref<HTMLDivElement | null> = ref(null);
-const {
-    data: res,
-    pending,
-    error,
-} = useFetch<{ success: boolean; data: Exhibition[] }>("/api/exhibitions", {
-    baseURL: config.public.apiBase,
-    default: () => ({ success: false, data: [] }),
-});
+const emit = defineEmits<{
+    (e: "select", item: Exhibition): void;
+}>();
 
-const exhibitions: Ref<Exhibition[]> = computed(() => res.value?.data ?? []);
+const mapEl: Ref<HTMLDivElement | null> = ref(null);
 
 let map: any = null;
 let activeInfoWindow: { close: () => void } | null = null;
@@ -50,7 +44,7 @@ onMounted(async () => {
         level: 5,
     });
 
-    exhibitions.value.forEach((item: Exhibition) => {
+    props.exhibitions.forEach((item: Exhibition) => {
         if (item.start_date && item.end_date) {
             const now = convertKoreaTime(new Date(), "day");
 
@@ -123,8 +117,9 @@ onMounted(async () => {
             }
 
             infowindow.open(map, marker);
-
             activeInfoWindow = infowindow;
+
+            emit("select", item);
         });
     });
 });
