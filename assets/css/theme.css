@@ -26,6 +26,10 @@
     --infowindow-text: #000000;
     --control-bg: #f5f5f5;
     --control-border: #bfbfbf;
+
+    /* v-theme-라이트 */
+    --v-theme-background: 255, 255, 255;
+    --v-theme-on-background: 0, 0, 0;
 }
 
 :root[data-theme="dark"] {
@@ -43,4 +47,8 @@
     --infowindow-text: #1f2937;
     --control-bg: #334155;
     --control-border: #475569;
+
+    /* v-theme-다크 */
+    --v-theme-background: 18, 18, 18;
+    --v-theme-on-background: 255, 255, 255;
 }
