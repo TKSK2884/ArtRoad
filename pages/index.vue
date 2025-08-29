@@ -8,7 +8,7 @@
         <div :class="$style.layout">
             <KakaoMap
                 :class="$style.map"
-                :exhibitions="exhibitions"
+                :exhibitions="ongoingExhibitions"
                 :selected="selectedExhibition"
                 :center="myCenter"
                 @select="selectedExhibition = $event"
@@ -16,7 +16,7 @@
 
             <ExhibitionList
                 :class="$style.list"
-                :exhibitions="exhibitions"
+                :exhibitions="ongoingExhibitions"
                 @click-item="selectedExhibition = $event"
             />
         </div>
@@ -70,6 +70,13 @@ const {
 
 const exhibitions: Ref<Exhibition[]> = computed(() => res.value?.data ?? []);
 const selectedExhibition = ref<Exhibition | null>(null);
+
+// 필터링된 전시회 목록
+const ongoingExhibitions = computed(() =>
+    exhibitions.value.filter((exhibition) =>
+        isOngoing(exhibition.start_date, exhibition.end_date)
+    )
+);
 
 const centerToMe = () => {
     // 위치 정보 받아오기
