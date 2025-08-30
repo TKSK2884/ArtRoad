@@ -17,7 +17,8 @@
             <ExhibitionList
                 :class="$style.list"
                 :exhibitions="ongoingExhibitions"
-                @click-item="selectedExhibition = $event"
+                :selected="selectedExhibition"
+                @click="handleClickItem"
             />
         </div>
 
@@ -41,7 +42,7 @@
     </div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import type { Exhibition } from "~/structure/type";
 
 useHead({
@@ -77,6 +78,15 @@ const ongoingExhibitions = computed(() =>
         isOngoing(exhibition.start_date, exhibition.end_date)
     )
 );
+
+const handleClickItem = (item: Exhibition | null) => {
+    if (selectedExhibition.value == item) {
+        selectedExhibition.value = null;
+        return;
+    }
+
+    selectedExhibition.value = item;
+};
 
 const centerToMe = () => {
     // 위치 정보 받아오기

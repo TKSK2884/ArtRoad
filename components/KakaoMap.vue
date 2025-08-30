@@ -2,16 +2,18 @@
     <div :class="$style.mapwrap">
         <div :class="$style.map" ref="mapEl" />
         <div :class="$style.control">
-            <span @click="zoomIn()"
-                ><img
+            <span @click="zoomIn()">
+                <img
                     src="https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/ico_plus.png"
                     alt="확대"
-            /></span>
-            <span @click="zoomOut()"
-                ><img
+                />
+            </span>
+            <span @click="zoomOut()">
+                <img
                     src="https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/ico_minus.png"
                     alt="축소"
-            /></span>
+                />
+            </span>
         </div>
     </div>
 </template>
@@ -28,13 +30,35 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: "select", item: Exhibition): void;
+    (e: "select", item: Exhibition | null): void;
 }>();
 
 const mapEl: Ref<HTMLDivElement | null> = ref(null);
 
 let map: any = null;
 let activeInfoWindow: { close: () => void } | null = null;
+let originalCenter: any = null;
+
+// 마커와 InfoWindow 캐싱용
+const markerMap = new Map<number, any>();
+const infoWindowMap = new Map<number, any>();
+
+const closeInfoWindow = () => {
+    if (activeInfoWindow) {
+        activeInfoWindow.close();
+        activeInfoWindow = null;
+
+        if (originalCenter) {
+            // 원래 중심으로 복귀
+            map.panTo(originalCenter);
+            originalCenter = null;
+        }
+
+        emit("select", null);
+    }
+};
+
+window.closeInfoWindow = closeInfoWindow;
 
 onMounted(async () => {
     await loadKakaoMap();
@@ -45,6 +69,8 @@ onMounted(async () => {
     });
 
     props.exhibitions.forEach((item: Exhibition) => {
+        if (!isOngoing(item.start_date, item.end_date)) return;
+
         const marker = new window.kakao.maps.Marker({
             map,
             position: new window.kakao.maps.LatLng(
@@ -53,10 +79,10 @@ onMounted(async () => {
             ),
         });
 
-        const infowindow = new window.kakao.maps.InfoWindow({
+        const infoWindow = new window.kakao.maps.InfoWindow({
             content: `
-            <div class="infowindow">
-                <button onclick="window.closeInfowindow()"
+            <div class="infoWindow">
+                <button onclick="window.closeInfoWindow()"
                     style="
                     position: absolute;
                     top: 6px;
@@ -88,20 +114,18 @@ onMounted(async () => {
             `,
         });
 
-        window.closeInfowindow = () => {
-            if (activeInfoWindow) {
-                activeInfoWindow.close();
-                activeInfoWindow = null;
-            }
-        };
+        markerMap.set(item.id, marker);
+        infoWindowMap.set(item.id, infoWindow);
 
         window.kakao.maps.event.addListener(marker, "click", () => {
             if (activeInfoWindow) {
                 activeInfoWindow.close();
             }
 
-            infowindow.open(map, marker);
-            activeInfoWindow = infowindow;
+            originalCenter = map.getCenter();
+
+            infoWindow.open(map, marker);
+            activeInfoWindow = infoWindow;
 
             emit("select", item);
         });
@@ -119,6 +143,43 @@ const zoomOut = () => {
 
     map.setLevel(map.getLevel() + 1);
 };
+
+watch(
+    () => props.selected,
+    (n) => {
+        if (n == null) {
+            closeInfoWindow();
+            return;
+        }
+
+        const position = new window.kakao.maps.LatLng(
+            Number(n.latitude),
+            Number(n.longitude)
+        );
+
+        const center = new window.kakao.maps.LatLng(
+            position.getLat(),
+            position.getLng()
+        );
+
+        map.panTo(center);
+
+        const marker = markerMap.get(n.id);
+        const infoWindow = infoWindowMap.get(n.id);
+
+        if (marker == null || infoWindow == null) return;
+
+        if (activeInfoWindow) {
+            activeInfoWindow.close();
+            activeInfoWindow = null;
+        }
+
+        originalCenter = map.getCenter();
+
+        infoWindow.open(map, marker);
+        activeInfoWindow = infoWindow;
+    }
+);
 
 watch(
     () => props.center,
@@ -140,12 +201,12 @@ watch(
         background: var(--map-bg);
         border-radius: 12px;
 
-        :global(.infowindow) {
-            width: 240px;
+        :global(.infoWindow) {
+            width: 180px;
             font-size: 14px;
-            padding: 6px;
+            padding: 4px;
             border-radius: 8px;
-            color: var(--infowindow-text);
+            color: var(--info-window-text);
 
             :global(.title) {
                 font-weight: bold;

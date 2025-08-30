@@ -3,7 +3,7 @@ declare global {
         kakao: {
             maps: any;
         };
-        closeInfowindow: () => void;
+        closeInfoWindow: () => void;
     }
 }
 

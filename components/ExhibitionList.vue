@@ -3,8 +3,11 @@
         <div
             v-for="item in exhibitions"
             :key="item.id"
-            :class="[$style.card, selected?.id === item.id && $style.active]"
-            @click="$emit('click-item', item)"
+            :class="[
+                $style.card,
+                { [$style.active]: selected?.id === item.id },
+            ]"
+            @click="$emit('click', item)"
         >
             <img
                 :src="item.image_url"
@@ -26,11 +29,15 @@
 <script setup lang="ts">
 import { format } from "date-fns";
 import type { Exhibition } from "~/structure/type";
-defineProps<{
+
+const props = defineProps<{
     exhibitions: Exhibition[];
     selected?: Exhibition | null;
 }>();
-defineEmits(["click-item"]);
+
+const emit = defineEmits<{
+    (e: "click", item: Exhibition): void;
+}>();
 </script>
 
 <style lang="scss" module>
@@ -53,6 +60,11 @@ defineEmits(["click-item"]);
 
         &:hover {
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        &.active {
+            background-color: #f6faff;
+            border-color: var(--primary-color);
         }
 
         > .thumb {
@@ -82,11 +94,6 @@ defineEmits(["click-item"]);
                 margin-block: 2px;
             }
         }
-    }
-
-    > .active {
-        background-color: #f6faff;
-        border-color: var(--primary-color);
     }
 }
 </style>
