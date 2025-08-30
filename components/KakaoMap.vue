@@ -58,9 +58,9 @@ const closeInfoWindow = () => {
     }
 };
 
-window.closeInfoWindow = closeInfoWindow;
-
 onMounted(async () => {
+    window.closeInfoWindow = closeInfoWindow;
+
     await loadKakaoMap();
 
     map = new window.kakao.maps.Map(mapEl.value, {
