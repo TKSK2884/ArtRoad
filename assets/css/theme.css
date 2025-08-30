@@ -23,7 +23,7 @@
 
     /* 맵 */
     --map-bg: #f1f5f9;
-    --infowindow-text: #000000;
+    --info-window-text: #000000;
     --control-bg: #f5f5f5;
     --control-border: #bfbfbf;
 
@@ -44,7 +44,7 @@
     --subtitle-color: #9ca3af;
 
     --map-bg: #1e293b; /* 다크 모드 전용 지도 배경색 */
-    --infowindow-text: #1f2937;
+    --info-window-text: #1f2937;
     --control-bg: #334155;
     --control-border: #475569;
 
