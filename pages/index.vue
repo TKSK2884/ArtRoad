@@ -147,6 +147,10 @@ const centerToMe = () => {
             flex: 1;
             max-height: 500px;
             overflow-x: auto;
+
+            @include mobile {
+                max-height: 300px;
+            }
         }
 
         > .map,
