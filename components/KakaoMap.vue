@@ -15,6 +15,9 @@
                 />
             </span>
         </div>
+        <v-overlay :model-value="loading" class="align-center justify-center">
+            <v-progress-circular indeterminate color="yellow" size="64" />
+        </v-overlay>
     </div>
 </template>
 
@@ -34,6 +37,7 @@ const emit = defineEmits<{
 }>();
 
 const mapEl: Ref<HTMLDivElement | null> = ref(null);
+const loading: Ref<boolean> = ref(false);
 
 let map: any = null;
 let activeInfoWindow: { close: () => void } | null = null;
@@ -60,6 +64,8 @@ const closeInfoWindow = () => {
 
 onMounted(async () => {
     window.closeInfoWindow = closeInfoWindow;
+
+    loading.value = true;
 
     await loadKakaoMap();
 
@@ -130,6 +136,8 @@ onMounted(async () => {
             emit("select", item);
         });
     });
+
+    loading.value = false;
 });
 
 const zoomIn = () => {
