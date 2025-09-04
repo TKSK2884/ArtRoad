@@ -15,7 +15,11 @@
                 />
             </span>
         </div>
-        <v-overlay :model-value="loading" class="align-center justify-center">
+        <v-overlay
+            :model-value="loading"
+            contained
+            class="align-center justify-center"
+        >
             <v-progress-circular indeterminate color="yellow" size="64" />
         </v-overlay>
     </div>
