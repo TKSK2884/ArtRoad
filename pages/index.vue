@@ -164,6 +164,11 @@ const centerToMe = () => {
     > .location {
         position: static;
 
+        :global(.v-btn__overlay),
+        :global(.v-btn__underlay) {
+            opacity: 0 !important;
+        }
+
         @include mobile {
             position: fixed;
             bottom: 20px;
