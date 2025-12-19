@@ -15,6 +15,11 @@ export interface Exhibition {
     created_at: string;
 }
 
+export interface Bounds {
+    sw: { lat: number; lng: number };
+    ne: { lat: number; lng: number };
+}
+
 export enum KoreaTimeEnum {
     Day = "day",
 }
