@@ -88,8 +88,6 @@ const onBounds = (b: Bounds) => {
 const inBounds = (ex: Exhibition, b: NonNullable<typeof mapBounds.value>) => {
     if (ex.latitude == null || ex.longitude == null) return false;
 
-    console.log(b);
-
     return (
         ex.latitude >= b.sw.lat &&
         ex.latitude <= b.ne.lat &&
