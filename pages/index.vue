@@ -11,12 +11,13 @@
                 :exhibitions="ongoingExhibitions"
                 :selected="selectedExhibition"
                 :center="myCenter"
+                @bounds="onBounds"
                 @select="selectedExhibition = $event"
             />
 
             <ExhibitionList
                 :class="$style.list"
-                :exhibitions="ongoingExhibitions"
+                :exhibitions="visibleExhibitions"
                 :selected="selectedExhibition"
                 @click="handleClickItem"
             />
@@ -43,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Exhibition } from "~/structure/type";
+import type { Bounds, Exhibition } from "~/structure/type";
 
 useHead({
     title: "아트로드 - 전시 탐색",
@@ -70,7 +71,32 @@ const {
 });
 
 const exhibitions: Ref<Exhibition[]> = computed(() => res.value?.data ?? []);
-const selectedExhibition = ref<Exhibition | null>(null);
+const selectedExhibition: Ref<Exhibition | null> = ref(null);
+
+const mapBounds: Ref<Bounds | null> = ref(null);
+const ignoreBoundsOnce: Ref<boolean> = ref(false);
+
+const onBounds = (b: Bounds) => {
+    if (ignoreBoundsOnce.value) {
+        ignoreBoundsOnce.value = false;
+        return;
+    }
+
+    mapBounds.value = b;
+};
+
+const inBounds = (ex: Exhibition, b: NonNullable<typeof mapBounds.value>) => {
+    if (ex.latitude == null || ex.longitude == null) return false;
+
+    console.log(b);
+
+    return (
+        ex.latitude >= b.sw.lat &&
+        ex.latitude <= b.ne.lat &&
+        ex.longitude >= b.sw.lng &&
+        ex.longitude <= b.ne.lng
+    );
+};
 
 // 필터링된 전시회 목록
 const ongoingExhibitions = computed(() =>
@@ -79,11 +105,30 @@ const ongoingExhibitions = computed(() =>
     )
 );
 
+const visibleExhibitions = computed(() => {
+    const list = ongoingExhibitions.value;
+
+    const b = mapBounds.value;
+    if (!b) return list;
+
+    const base: Exhibition[] = list.filter((ex) => inBounds(ex, b));
+    const select: Exhibition | null = selectedExhibition.value;
+
+    if (select && !base.some((x) => x.id === select.id)) {
+        return [select, ...base];
+    }
+
+    return base;
+});
+
 const handleClickItem = (item: Exhibition | null) => {
     if (selectedExhibition.value == item) {
         selectedExhibition.value = null;
         return;
     }
+
+    // 다음 bounds 이벤트 1회는 무시하도록 설정
+    ignoreBoundsOnce.value = true;
 
     selectedExhibition.value = item;
 };
