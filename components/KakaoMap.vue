@@ -144,6 +144,24 @@ onMounted(async () => {
     loading.value = false;
 });
 
+onUnmounted(() => {
+    // map 이벤트 제거
+    if (idleListener) {
+        window.kakao.maps.event.removeListener(idleListener);
+        idleListener = null;
+    }
+
+    // marker 제거
+    markerMap.forEach((marker) => marker.setMap(null));
+    markerMap.clear();
+
+    // infoWindow 닫기
+    infoWindowMap.forEach((iw) => iw.close());
+    infoWindowMap.clear();
+
+    activeInfoWindow = null;
+});
+
 const zoomIn = () => {
     if (!map) return;
 
