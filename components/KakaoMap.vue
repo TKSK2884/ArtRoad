@@ -38,6 +38,13 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (e: "select", item: Exhibition | null): void;
+    (
+        e: "bounds",
+        v: {
+            sw: { lat: number; lng: number };
+            ne: { lat: number; lng: number };
+        }
+    ): void;
 }>();
 
 const mapEl: Ref<HTMLDivElement | null> = ref(null);
@@ -50,6 +57,8 @@ let originalCenter: any = null;
 // 마커와 InfoWindow 캐싱용
 const markerMap = new Map<number, any>();
 const infoWindowMap = new Map<number, any>();
+
+let idleListener: any = null;
 
 const closeInfoWindow = () => {
     if (activeInfoWindow) {
@@ -66,6 +75,19 @@ const closeInfoWindow = () => {
     }
 };
 
+const emitBounds = () => {
+    if (!map) return;
+
+    const b = map.getBounds();
+    const sw = b.getSouthWest();
+    const ne = b.getNorthEast();
+
+    emit("bounds", {
+        sw: { lat: sw.getLat(), lng: sw.getLng() },
+        ne: { lat: ne.getLat(), lng: ne.getLng() },
+    });
+};
+
 onMounted(async () => {
     window.closeInfoWindow = closeInfoWindow;
 
@@ -77,6 +99,9 @@ onMounted(async () => {
         center: new window.kakao.maps.LatLng(37.5665, 126.978),
         level: 5,
     });
+
+    idleListener = window.kakao.maps.event.addListener(map, "idle", emitBounds);
+    emitBounds();
 
     props.exhibitions.forEach((item: Exhibition) => {
         if (!isOngoing(item.start_date, item.end_date)) return;
